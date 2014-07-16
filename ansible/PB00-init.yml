@@ -1,0 +1,43 @@
+---
+- hosts: all
+  user: pi
+  sudo: yes
+
+  tasks:
+    - name: apt initial update
+      command:
+        /usr/bin/apt-get update -y
+
+    - name: apt initial upgrade
+      command:
+        /usr/bin/apt-get upgrade -y
+
+    - name: install python-apt
+      command:
+        /usr/bin/apt-get install python-apt -y
+
+    - name: add ll alias
+      lineinfile:
+        dest=/etc/profile
+        regexp='^alias ll'
+        insertafter=EOF
+        line='alias ll="ls -aul"'
+        state=present
+
+    - name: install some packages
+      apt:
+        pkg={{ item }}
+        state=present
+      with_items:
+        - openjdk-7-jdk
+        - emacs
+        - tmux
+
+    - name: remove some packages
+      apt:
+        pkg={{ item }}
+        state=absent
+        purge=yes
+      with_items:
+        - oracle-java7-jdk
+        - wolfram-engine

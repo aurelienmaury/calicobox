@@ -1,0 +1,19 @@
+---
+
+- name: restart ifplugd
+  service:
+    name=ifplugd
+    state=restarted
+    enabled=yes
+
+- name: restart dnsmasq
+  service:
+    name=dnsmasq
+    state=restarted
+    enabled=yes
+
+- name: restart hostapd
+  service:
+    name=hostapd
+    state=restarted
+    enabled=yes

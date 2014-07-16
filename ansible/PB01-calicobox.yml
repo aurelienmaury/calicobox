@@ -1,0 +1,6 @@
+- hosts: calicobox
+  user: pi
+  sudo: yes
+
+  roles:
+    - access-point

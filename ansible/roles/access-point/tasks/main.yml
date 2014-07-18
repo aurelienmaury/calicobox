@@ -7,7 +7,7 @@
     - hostapd
     - dnsmasq
   tags:
-    - install
+    - system
 
 - name: eth0 and wlan0 at boot
   template:
@@ -17,7 +17,7 @@
     group=root
     mode=0600
   tags:
-    - conf
+    - system
 
 - name: remove wlan0 from ifplugd (init)
   lineinfile:
@@ -27,7 +27,7 @@
     state=present
   notify: restart ifplugd
   tags:
-    - conf
+    - system
 
 - name: remove wlan0 from ifplugd (udev)
   lineinfile:
@@ -37,7 +37,7 @@
     state=present
   notify: restart ifplugd
   tags:
-    - conf
+    - system
 
 - name: enable ipv4 forward
   lineinfile:
@@ -47,7 +47,7 @@
     line='net.ipv4.ip_forward=1'
     insertafter=EOF
   tags:
-    - conf
+    - system
 
 - name: network nat rules configuration
   template:
@@ -57,7 +57,7 @@
     owner=root
     group=root
   tags:
-    - conf
+    - system
 
 - name: dnsmasq configuration
   template:
@@ -68,7 +68,7 @@
     group=root
   notify: restart dnsmasq
   tags:
-    - conf
+    - system
 
 - name: hostapd configuration
   template:
@@ -78,6 +78,8 @@
     owner=root
     group=root
   notify: restart hostapd
+  tags:
+    - system
 
 - name: hostapd configuration pointer
   template:
@@ -87,6 +89,8 @@
     owner=root
     group=root
   notify: restart hostapd
+  tags:
+    - system
 
 - name: motd
   template:
@@ -95,6 +99,8 @@
     mode=0644
     owner=root
     group=root
+  tags:
+    - system
 
 - name: system services
   service:
@@ -105,4 +111,4 @@
     - dnsmasq
     - hostapd
   tags:
-    - conf
+    - system

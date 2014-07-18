@@ -1,0 +1,85 @@
+---
+- name: downloading vertx
+  get_url:
+    url=http://dl.bintray.com/vertx/downloads/vert.x-2.1.1.tar.gz
+    dest=/home/pi/vert.x-2.1.1.tar.gz
+    sha256sum=c25f85aa65f65b4ce6f2d4728a722d606eed5b799fca0da382721f7078e5fcce
+    owner=pi
+    group=pi
+    mode=0644
+  tags:
+    - calico-service
+
+- name: installing vertx
+  unarchive:
+    src=/home/pi/vert.x-2.1.1.tar.gz
+    dest=/opt
+    copy=no
+  tags:
+    - calico-service
+
+- name: calico user
+  user:
+    name=calico
+    group=www-data
+    state=present
+    system=yes
+    createhome=no
+    shell=/bin/false
+  tags:
+    - calico-service
+
+- name: vertx mod repository
+  file:
+    path={{ item }}
+    state=directory
+    mode=0755
+    owner=calico
+    group=www-data
+  with_items:
+    - /home/calico
+    - /home/calico/vertx-mods
+    - /home/calico/box
+  tags:
+    - calico-service
+
+- name: service launcher
+  template:
+    src=service-init.j2
+    dest=/etc/init.d/calico
+    owner=root
+    group=root
+    mode=0755
+  notify: restart calico
+  tags:
+    - calico-service
+
+- name: service config
+  template:
+    src=calico.conf.j2
+    dest=/home/calico/calico.conf
+    owner=calico
+    group=www-data
+    mode=0644
+  notify: restart calico
+  tags:
+    - calico-service
+
+- name: service itself
+  copy:
+    src=../../../../build/libs/calico-1.0.zip
+    dest=/home/calico/vertx-mods
+    owner=calico
+    group=www-data
+    mode=0644
+  notify: restart calico
+  tags:
+    - calico-service
+
+- name: calico service enabled
+  service:
+    name=calico
+    state=started
+    enabled=yes
+  tags:
+    - calico-service

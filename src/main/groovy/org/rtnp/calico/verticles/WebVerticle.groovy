@@ -50,7 +50,7 @@ class WebVerticle extends Verticle {
 
         server.listen(conf.port, conf.host)
 
-        container.logger.info("Gwez WebVerticle: http://${conf.host}:${conf.port}/")
+        container.logger.info("Ahoy Calico! http://${conf.host}:${conf.port}/")
     }
 
     private Closure buildRouteMatcherClosure() {
@@ -65,9 +65,11 @@ class WebVerticle extends Verticle {
 
     private def routeUpload(HttpServerRequest req) {
 
+        container.logger.info('Incoming upload')
+
         String uploadedFilename = req.params.get('filename')
-        container.logger.debug("Incoming upload: ${uploadedFilename}")
-        if (uploadedFilename.contains('../')) {
+        container.logger.info("Incoming upload: ${uploadedFilename}")
+        if (uploadedFilename.contains('..')) {
             req.response.statusCode = HTTP_BAD_REQUEST
             req.response.end()
             return
@@ -83,15 +85,16 @@ class WebVerticle extends Verticle {
             String fileName = "${boardingDir}/${req.params.filename}"
             String tmpFileName = "${boardingDir}/${boardingName}"
 
-            vertx.fileSystem.open(tmpFileName) { AsyncResult<AsyncFile> asyncRes ->
-                if (asyncRes.succeeded) {
-                    AsyncFile file = asyncRes.result
+            vertx.fileSystem.open(tmpFileName) { AsyncResult<AsyncFile> openResult ->
+
+                if (openResult.succeeded) {
+                    AsyncFile file = openResult.result
                     Pump pump = Pump.createPump(req, file)
 
                     req.endHandler {
-                        file.close {
+                        file.close { AsyncResult<AsyncFile> closeResult ->
                             vertx.fileSystem.move(tmpFileName, fileName) {
-                                vertx.eventBus.publish(MainVerticle.BUS_NAME + '.fileYard.onboardFile', [filename: fileName])
+                                vertx.eventBus.publish(BusAddr.ONBOARD_FILE.address, [filename: fileName])
                             }
                         }
                     }
@@ -101,7 +104,7 @@ class WebVerticle extends Verticle {
                     req.response.statusCode = 200
                     req.response.end()
                 } else {
-                    container.logger.error('Could not open file on upload', asyncRes.cause)
+                    container.logger.error('Could not open file on upload', openResult.cause)
                     req.resume()
                     req.response.statusCode = HTTP_SERVER_ERROR
                     req.response.end()
@@ -113,14 +116,22 @@ class WebVerticle extends Verticle {
     private def routeReassemble(HttpServerRequest req) {
 
         vertx.eventBus.send(BusAddr.GET_ASSEMBLY.address, [sha1: req.params['sha1']]) { allChunksResp ->
+
+
+            Pump pump = Pump.createPump(req, file)
+
+
+
+            /*
             vertx.eventBus.send(BusAddr.ASSEMBLE_FILE.address, allChunksResp.body) {
                 container.logger.info("${allChunksResp.body.name} popped out of the warp")
                 req.response.end()
-            }
+            }*/
         }
     }
 
     private def routeServeFile(HttpServerRequest req) {
+
         if (NG_ENTRY_POINTS.contains(req.path)) {
             req.response.sendFile(RESOURCE_RELATIVE_ROOT_INDEX)
         } else {
@@ -148,7 +159,6 @@ class WebVerticle extends Verticle {
 
         VertxInternal core = vertx.toJavaVertx() as VertxInternal
         String pathToDisk = PathAdjuster.adjust(core, resourceRelativePath)
-        //println "${resourceRelativePath} is here :${pathToDisk} "
 
         new File(pathToDisk)
     }

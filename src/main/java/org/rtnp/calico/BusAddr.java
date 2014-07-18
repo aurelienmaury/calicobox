@@ -14,10 +14,9 @@ enum BusAddr {
     GET_ASSEMBLY("get.assembly"),
     SHA256_SUM("file.sha256.sum");
 
-    private static final String BUS_NAME = "org.rtnp.galaxie.vertx.mod.gwez";
+    private static final String BUS_NAME = "org.rtnp.calico";
 
     private String address;
-
 
     private BusAddr(String suffix) {
         this.address = BUS_NAME + "." + suffix;

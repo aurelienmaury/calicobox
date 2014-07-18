@@ -10,13 +10,17 @@ gwez.factory('eventbus', function ($rootScope) {
     eb.emit = function (channel, message, callback) {
         var self = this;
         if (self.readyState() == vertx.EventBus.OPEN) {
-            self.send(channel, message, function (reply) {
-                $rootScope.$apply(function () {
-                    if (callback) {
+
+            if (callback) {
+                self.send(channel, message, function (reply) {
+                    $rootScope.$apply(function () {
+
                         callback(reply);
-                    }
+                    });
                 });
-            });
+            } else {
+                self.publish(channel, message);
+            }
         } else {
             self.messageQueue.push({channel: channel, message: message, callback: callback});
         }

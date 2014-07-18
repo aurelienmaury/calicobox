@@ -1,14 +1,11 @@
 {
     "main": "groovy:org.rtnp.calico.MainVerticle",
 
-    // If your module is going to be registered in the Vert.x module registry you will also need the following
-    // mandatory fields
-    "description": "Gwez module",
-    "licenses": ["Do What The Fuck You Want To Public License Version 2.0"],
+    "description": "Calico App",
+    "licenses": ["GNU GENERAL PUBLIC LICENSE version 3"],
     "author": "Aurélien Maury",
 
-    "keywords": ["gerbils", "cars", "cheese", "chocolate", "underpants", "herring"],
-    "homepage": "url to your project page",
+    "keywords": ["calico", "file", "orientdb"],
+    "homepage": "http://calico.rtnp.org",
     "auto-redeploy": true
-
 }

@@ -9,21 +9,18 @@ class SearchVerticle extends Verticle {
     def start() {
 
         vertx.eventBus.registerHandler(BusAddr.SEARCH.address) { searchMessage ->
-            vertx.eventBus.send(MainVerticle.BUS_NAME + '.search.local', searchMessage.body) { localResponse ->
-                vertx.eventBus.publish(BusAddr.SEARCH_RESULT.address, localResponse.body)
-            }
-        }
-
-        vertx.eventBus.registerHandler(MainVerticle.BUS_NAME + '.search.local') { searchMessage ->
+            container.logger.info("search local launched")
 
             vertx.eventBus.send(BusAddr.SEARCH_FILE_BY_NAME.address, [query: searchMessage.body.query]) { dbResponse ->
+
+                container.logger.info("search result")
                 def searchResponse = [query: searchMessage.body.query]
 
                 if (dbResponse.body.hits) {
                     searchResponse.hits = dbResponse.body.hits
                 }
 
-                searchMessage.reply(searchResponse)
+                vertx.eventBus.publish(BusAddr.SEARCH_RESULT.address,searchResponse)
             }
         }
 
@@ -42,8 +39,8 @@ class SearchVerticle extends Verticle {
 
                         def allOrderedSha1 = esChunksResponse.body.hits.sort { it.num }.collect { it.sha1 }
                         def landingMessage = [
-                                name: fileName,
-                                sha1: searchMessage.body.sha1,
+                                name  : fileName,
+                                sha1  : searchMessage.body.sha1,
                                 chunks: allOrderedSha1
                         ]
                         searchMessage.reply(landingMessage)
